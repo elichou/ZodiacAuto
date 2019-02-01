@@ -268,9 +268,12 @@ int main(int argc, char **argv)
             case 3 : // PIDsin regulator
                 helmCmd_msg.data = regulatorPIDsin(errorCourse) + offsetMotorAngle;
                 break;
-            case 4 :
+            case 4 : // slalom regulator with zodiac coordinates
                 helmCmd_msg.data = regulatorSlalom(waypointLine.at(1).longitude, waypointLine.at(1).latitude,
                 waypointLine.at(0).longitude, waypointLine.at(0).latitude, boatLongitude, boatLatitude) + offsetMotorAngle;
+                break;
+            case 5 :
+                break;
             }
             helmCmd_pub.publish(helmCmd_msg);
         }
