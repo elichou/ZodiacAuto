@@ -13,3 +13,12 @@
 [submodule "nmea_msgs"]
 	path = nmea_msgs
 	url = https://github.com/ros-drivers/nmea_msgs.git
+[submodule "geographic_info"]
+	path = geographic_info
+	url = https://github.com/ros-geographic-info/geographic_info
+[submodule "robot_localization"]
+	path = robot_localization
+	url =	https://github.com/cra-ros-pkg/robot_localization
+[submodule "unique_identifier"]
+	path = unique_identifier
+	url = https://github.com/ros-geographic-info/unique_identifier
