@@ -252,6 +252,7 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "courseRegulator");
     ros::NodeHandle nh;
     ros::NodeHandle nhp("~");
+    ros::Nodehandle n;
 
     ros::Subscriber vel_sub = nh.subscribe("vel", 1, vel_callback);
     ros::Subscriber imu_sub = nh.subscribe("imu", 1, imu_callback);
@@ -260,14 +261,14 @@ int main(int argc, char **argv)
     ros::Subscriber waypointLine_sub = nh.subscribe("waypoint_line", 1, waypointLine_callback);
     ros::Subscriber fix_sub = nh.subscribe("fix", 1, fix_callback);
 
-    ros::Subscriber  rasp_imu_sub = nh.subscribe("rasp/imu", 1, imu_rasp_callback);
+    ros::Subscriber  rasp_imu_sub = n.subscribe("/rasp/imu", 1, imu_rasp_callback);
 
 
     helmCmd_pub = nh.advertise<std_msgs::Float64>("helm_angle_cmd", 1);
     gpsSpeed_pub = nh.advertise<std_msgs::Float64>("gps_speed", 1);
     gpsCourse_pub = nh.advertise<std_msgs::Float64>("gps_course", 1);
     boatHeading_pub = nh.advertise<std_msgs::Float64>("boat_heading", 1);
-    raspHeading_pub = nh.advertise<std_msgs::Float64>("rasp_heading", 1);
+    raspHeading_pub = nh.advertise<std_msgs::Float64>("/rasp/rasp_heading", 1);
     errorCourse_pub = nh.advertise<std_msgs::Float64>("error_course", 1);
 
     nhp.param<double>("courseRegulator/max_helm_angle", maxHelmAngle, 25);
