@@ -1,7 +1,9 @@
 <launch>
   <group ns="rasp">
-    <include file="$(find main_rasp)/launchers/kalman.launch"/>
     <include file="$(find main_rasp)/launchers/imu.launch"/>
     <include file="$(find main_rasp)/launchers/gps.launch"/>
+    <include file="$(find main_rasp)/launchers/kalman.launch"/>
+
+    <node pkg="tf" type="static_transform_publisher" name="base2imu_frame_broadcast" args="0.0 0.0 0.0 0.0 0.0 0.0 base_link imu 100"/>
   </group>
 </launch>

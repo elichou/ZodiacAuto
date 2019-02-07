@@ -116,7 +116,7 @@ double regulatorPIDsin(const double courseError)
 }
 
 double regulatorSlalom(const double m_nextWaypointLon, const double m_nextWaypointLat,
-    const double m_prevWaypointLon, const double m_prevWaypointLat, const double m_VesselLon, const double m_VesselLat)
+    const double m_prevWaypointLon, const double m_prevWaypointLat, const double m_VesselLon, const double m_VesselLat, const double Heading)
 // regualteur basé sur le papier Slalom
 {
   double helmCmd;
@@ -138,14 +138,19 @@ double regulatorSlalom(const double m_nextWaypointLon, const double m_nextWaypoi
       earthRadius * cos(mathUtility::degreeToRadian(m_VesselLat)) * sin(mathUtility::degreeToRadian(m_VesselLon)),
       earthRadius * sin(mathUtility::degreeToRadian(m_VesselLat))};
 
+  if ((nextWPCoord[0] - prevWPCoord[0]) == 0)
+  {
+    throw "Division par zero";
+  }
+
   array<double, 2> param_droite = {
       // coefficent directeur de la droite formee par les deux waypoints
       (nextWPCoord[1] - prevWPCoord[1]) / (nextWPCoord[0] - prevWPCoord[0]),
       // ordonnee a l origine
       prevWPCoord[1] - ((nextWPCoord[1] - prevWPCoord[1]) / (nextWPCoord[0] - prevWPCoord[0])) * prevWPCoord[0]};
 
-  helmCmd = - mathUtility::sawtooth(boatHeading - atan2(param_droite[0] + (1 / 10) * (param_droite[0] * boatCoord[0] + param_droite[1] - boatCoord[1]), 1)) +
-    ((1 / 10) * (param_droite[0] * cos(boatHeading) - sin(boatHeading))) / pow(1 + (param_droite[0] + (1 / 10) * (param_droite[0] * boatCoord[0] + param_droite[1] - boatCoord[1])), 2);
+  helmCmd = - mathUtility::sawtooth(Heading - atan2(param_droite[0] + (1 / 10) * (param_droite[0] * boatCoord[0] + param_droite[1] - boatCoord[1]), 1)) +
+    ((1 / 10) * (param_droite[0] * cos(Heading) - sin(Heading))) / pow(1 + (param_droite[0] + (1 / 10) * (param_droite[0] * boatCoord[0] + param_droite[1] - boatCoord[1])), 2);
 
   // Anti wind up and max command
   if (abs(helmCmd) > maxHelmAngle)
@@ -221,7 +226,7 @@ void fix_rasp_callback(const sensor_msgs::NavSatFix::ConstPtr& fix_msg)
     }
     else
     {
-        ROS_WARN_THROTTLE(5, "No gps fix");
+        ROS_WARN_THROTTLE(5, "No rasp gps fix");
     }
 }
 
@@ -252,7 +257,7 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "courseRegulator");
     ros::NodeHandle nh;
     ros::NodeHandle nhp("~");
-    ros::Nodehandle n;
+
 
     ros::Subscriber vel_sub = nh.subscribe("vel", 1, vel_callback);
     ros::Subscriber imu_sub = nh.subscribe("imu", 1, imu_callback);
@@ -261,14 +266,14 @@ int main(int argc, char **argv)
     ros::Subscriber waypointLine_sub = nh.subscribe("waypoint_line", 1, waypointLine_callback);
     ros::Subscriber fix_sub = nh.subscribe("fix", 1, fix_callback);
 
-    ros::Subscriber  rasp_imu_sub = n.subscribe("/rasp/imu", 1, imu_rasp_callback);
-
+    ros::Subscriber  rasp_imu_sub = nh.subscribe("/rasp/imu", 1, imu_rasp_callback);
+    ros::Subscriber rasp_fix_sub = nh.subscribe("/rasp/fix", 1, fix_rasp_callback);
 
     helmCmd_pub = nh.advertise<std_msgs::Float64>("helm_angle_cmd", 1);
     gpsSpeed_pub = nh.advertise<std_msgs::Float64>("gps_speed", 1);
     gpsCourse_pub = nh.advertise<std_msgs::Float64>("gps_course", 1);
     boatHeading_pub = nh.advertise<std_msgs::Float64>("boat_heading", 1);
-    raspHeading_pub = nh.advertise<std_msgs::Float64>("/rasp/rasp_heading", 1);
+    raspHeading_pub = nh.advertise<std_msgs::Float64>("/rasp/heading", 1);
     errorCourse_pub = nh.advertise<std_msgs::Float64>("error_course", 1);
 
     nhp.param<double>("courseRegulator/max_helm_angle", maxHelmAngle, 25);
@@ -287,7 +292,8 @@ int main(int argc, char **argv)
     {
         if ((gpsSpeed != DATA_OUT_OF_RANGE) && (gpsCourse != DATA_OUT_OF_RANGE) &&
             (boatHeading != DATA_OUT_OF_RANGE) && (desiredCourse != DATA_OUT_OF_RANGE) &&
-            (boatLatitude != DATA_OUT_OF_RANGE) && (boatLongitude != DATA_OUT_OF_RANGE))
+            (boatLatitude != DATA_OUT_OF_RANGE) && (boatLongitude != DATA_OUT_OF_RANGE) &&
+            (raspHeading != DATA_OUT_OF_RANGE) && (raspLatitude != DATA_OUT_OF_RANGE) && (raspLongitude != DATA_OUT_OF_RANGE))
         {
             double errorCourse = mathUtility::limitAngleRange180(boatHeading - desiredCourse);
             double raspErrorCourse = mathUtility::limitAngleRange180(raspHeading - desiredCourse);
@@ -308,11 +314,15 @@ int main(int argc, char **argv)
                 helmCmd_msg.data = regulatorPIDsin(errorCourse) + offsetMotorAngle;
                 break;
             case 4 :
-                helmCmd_msg.data = regulatorSlalom(waypointLine.at(1).longitude, waypointLine.at(1).latitude,
-                waypointLine.at(0).longitude, waypointLine.at(0).latitude, boatLongitude, boatLatitude) + offsetMotorAngle;
-            case 5 :
                 errorCourse_msg.data = raspErrorCourse;
                 helmCmd_msg.data = regulatorPID(raspErrorCourse) + offsetMotorAngle;
+            case 5 :
+                helmCmd_msg.data = regulatorSlalom(waypointLine.at(1).longitude, waypointLine.at(1).latitude,
+                waypointLine.at(0).longitude, waypointLine.at(0).latitude, boatLongitude, boatLatitude, boatHeading) + offsetMotorAngle;
+            case 6:
+                helmCmd_msg.data = regulatorSlalom(waypointLine.at(1).longitude, waypointLine.at(1).latitude,
+                waypointLine.at(0).longitude, waypointLine.at(0).latitude, raspLongitude, raspLatitude, raspHeading) + offsetMotorAngle;
+
 
 
             }
