@@ -1,0 +1,16 @@
+<launch>
+
+  <node 
+	pkg="nmea_navsat_driver" 
+	type="nmea_serial_driver" 
+	name="navsat" 
+	respawn="true"
+  >
+    	<rosparam 
+		command="load" 
+		file="$(find main_rasp)/config/gps_driver.yaml"
+	/>
+
+  </node>
+
+</launch>

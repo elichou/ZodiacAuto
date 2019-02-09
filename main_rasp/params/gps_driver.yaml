@@ -1,0 +1,3 @@
+port: /dev/GPS
+
+baud: 19200
