@@ -8,7 +8,7 @@
   >
     	<rosparam 
 		command="load" 
-		file="$(find main_rasp)/config/gps_driver.yaml"
+		file="$(find main_rasp)/params/gps_driver.yaml"
 	/>
 
   </node>
