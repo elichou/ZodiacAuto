@@ -1,6 +1,6 @@
 <!--
      This launch file runs three nodes:
-       (1) An UKF instance that fuses odometry and IMU data and outputs an odom-frame state estimate
+       (1) An UKF instance that uses IMU data and outputs an odom-frame state estimate
        (2) A second UKF instance that fuses the same data, but also fuses the transformed GPS data from (3)
        (3) An instance of navsat_transform_node, which takes in GPS data and produces pose data that has been
            transformed into your robot's world frame (here, map). The node produces a map-frame state estimate.
@@ -41,7 +41,7 @@
    >
 	<remap 
 		from="odometry/filtered" 
-		to="odometry/filtered_map"
+		to="odometry/filtered_map" <!-- result -->
 	/>
   </node>
 
