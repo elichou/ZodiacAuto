@@ -8,7 +8,7 @@
    >
     	<rosparam 
 		command="load"
-		file="$(find main_rasp)/config/my_razor.yaml"
+		file="$(find main_rasp)/param/my_razor.yaml"
 	/>
 
   </node>
