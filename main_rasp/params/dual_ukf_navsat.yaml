@@ -1,6 +1,6 @@
 # For parameter descriptions, please refer to the template parameter files for each node.
 
-ekf_se_odom:
+ukf_se_odom:
   frequency: 30
   sensor_timeout: 0.1
   two_d_mode: false
@@ -60,7 +60,7 @@ ekf_se_odom:
                                 0,    0,    0,    0,    0,    0,    0,    0,    0,    0,     0,     0,     0,    1.0,  0,
                                 0,    0,    0,    0,    0,    0,    0,    0,    0,    0,     0,     0,     0,    0,    1.0]
 
-ekf_se_map:
+ukf_se_map:
   frequency: 30
   sensor_timeout: 0.1
   two_d_mode: false
@@ -134,7 +134,7 @@ ekf_se_map:
 navsat_transform:
   frequency: 30
   delay: 3.0
-  magnetic_declination_radians: 0.0162935  # For lat/long 55.944831, -3.186998
+  magnetic_declination_radians: 0.017453292  # For lat/long 48° 23' 25" N / 4° 29' 11" W
   yaw_offset: 1.570796327  # IMU reads 0 facing magnetic north, not east TO be CHECKed
   zero_altitude: false
   broadcast_utm_transform: true
