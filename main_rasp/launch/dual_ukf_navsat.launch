@@ -63,7 +63,7 @@
 
 	<remap
 		from="/gps/fix"
-		to="/rasp/fix
+		to="/rasp/fix"
 	/>
 
   </node>
